@@ -66,11 +66,13 @@ def meme_rand():
     # Use the random python standard library class to:
     # 1. select a random image from imgs array
     # 2. select a random quote from the quotes array
-
-    img = random.choice(images)
-    quote = random.choice(quotes)
-    path = meme.make_meme(img, quote.body, quote.author)
-    return render_template('meme.html', path=path)
+    try:
+        img = random.choice(images)
+        quote = random.choice(quotes)
+        path = meme.make_meme(img, quote.body, quote.author)
+        return render_template('meme.html', path=path)
+    except:
+        print("Error while generating a random meme")
 
 
 @app.route('/create', methods=['GET'])
@@ -89,19 +91,23 @@ def meme_post():
     # 2. Use the meme object to generate a meme using this temp
     #    file and the body and author form paramaters.
     # 3. Remove the temporary saved image.
+    try:
+        img = "./temp_image.jpg"
+        image_url = request.form.get("image_url")
+        img_data = requests.get(image_url, stream=True).content
+        with open(img, "wb") as f:
+            f.write(img_data)
 
-    img = "./temp_image.jpg"
-    image_url = request.form.get("image_url")
-    img_data = requests.get(image_url, stream=True).content
-    with open(img, "wb") as f:
-        f.write(img_data)
-
-    body = request.form.get("body", "")
-    author = request.form.get("author", "")
-    path = meme.make_meme(img, body, author)
-    print(path)
-    os.remove(img)
-    return render_template("meme.html", path=path)
+        body = request.form.get("body", "")
+        author = request.form.get("author", "")
+        path = meme.make_meme(img, body, author)
+        print(path)
+        os.remove(img)
+        return render_template("meme.html", path=path)
+    
+    except:
+        print("Error while creating meme")
+        return "Please check that you are entering a valid image URL"
 
 
 if __name__ == "__main__":
